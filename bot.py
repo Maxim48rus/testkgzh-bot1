@@ -42,20 +42,21 @@ okrugs = {
     36: ("Сергей Николаевич Евсеев", "https://vk.com/sergeyevseev48")
 }
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    keyboard = [[KeyboardButton("Начать")]]
-    markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True, one_time_keyboard=True)
-    await update.message.reply_text("Нажмите кнопку ниже, чтобы начать:", reply_markup=markup)
-
-async def handle_start_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    msg = "Добрый день! Я помощник Клуба Городского Жителя — сокращённо КГЖ."
-    keyboard = [
+def main_menu_keyboard():
+    return ReplyKeyboardMarkup([
         [KeyboardButton("Узнать кто представитель клуба КГЖ")],
         [KeyboardButton("Подписаться на соцсети представителя")],
         [KeyboardButton("Поддержать представителя в голосовании")]
-    ]
-    markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
-    await update.message.reply_text(msg, reply_markup=markup)
+    ], resize_keyboard=True)
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    keyboard = [[KeyboardButton("Начать")]]
+    reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+    await update.message.reply_text("Нажмите кнопку ниже, чтобы начать:", reply_markup=reply_markup)
+
+async def handle_start_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    msg = "Добрый день! Я помощник Клуба Городского Жителя - сокращенно КГЖ. Выбери один из 3-х пунктов"
+    await update.message.reply_text(msg, reply_markup=main_menu_keyboard())
 
 async def handle_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text
@@ -78,21 +79,25 @@ async def handle_district(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "- нажми 'Найти' и получи номер УИК\n"
             "- напиши мне номер УИК в формате 00-00"
         )
-        await update.message.reply_text(msg.replace("\n", "\n"))
+        await update.message.reply_text(msg.replace("\n", "
+"))
         return
 
     try:
-        num = int(text)
-        if num in okrugs:
-            name, link = okrugs[num]
-            msg = f"Твой округ: {num}\nПредставитель Клуба Городского Жителя: {name}"
+        number = int(text)
+        if number in okrugs:
+            name, link = okrugs[number]
+            msg = f"Твой округ: {number}\nПредставитель Клуба Городского Жителя: {name}"
             if link:
                 msg += f"\n\nПодпишись на него в социальной сети ВК: {link}"
             keyboard = [[KeyboardButton("Назад")]]
             markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
-            await update.message.reply_text(msg.replace("\n", "\n"), reply_markup=markup)
+            await update.message.reply_text(msg.replace("\n", "
+"), reply_markup=markup)
         else:
-            await update.message.reply_text("Такого округа нет. Введите число от 1 до 36.")
+            keyboard = [[KeyboardButton("Назад")], [KeyboardButton("Не знаю")]]
+            markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+            await update.message.reply_text("Введите число от 1 до 36", reply_markup=markup)
     except ValueError:
         await update.message.reply_text("Пожалуйста, введите номер округа цифрой.")
 
